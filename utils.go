@@ -12,6 +12,6 @@ func IntToHex(num int64) []byte{
 	err:=binary.Write(buff,binary.BigEndian,num)
 	if err != nil{
 		log.Panic(err)
-	}
+	} 
 	return buff.Bytes()
 }

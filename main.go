@@ -1,19 +1,11 @@
 package main
 
-import (
-	"fmt"
-	"strconv"
-)
+
 
 func main() { 
 	bc := NewBlockChain()
+	defer bc.db.Close()
 
-	bc.AddBlock("send some btc to allen")
-	bc.AddBlock("send some qq to bob")
-
-	for _, block := range bc.blocks {
-		pow:=NewProofOfWork(block)
-		fmt.Printf("pow:%s\n",strconv.FormatBool(pow.Validate()))
-		fmt.Println()
-	}
+	cli := CLI{bc}
+	cli.Run()
 }

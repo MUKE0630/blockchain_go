@@ -51,6 +51,7 @@ func (pow *ProofOfWork) RunProofOfWork() (int,[]byte){
 	fmt.Print("Mining the block containing.....\"&s\"\n",pow.block.Data)
 	for nonce<maxNonce{
 		data:=pow.prepareData(nonce)
+		
 		hash=sha256.Sum256(data)
 		fmt.Printf("\r%x",hash)
 		hashInt.SetBytes(hash[:])
