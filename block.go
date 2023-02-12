@@ -2,55 +2,69 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/gob"
 	"log"
 	"time"
 )
 
-//精简后的区块头.
+// 精简后的区块头.
 type Block struct {
 	Timestamp     int64
-	Data          []byte
+	Transactions  []*Transaction
 	PrevBlockHash []byte
 	Hash          []byte
-	Nonce		  int
+	Nonce         int
 }
 
-//序列化区块
-func (b *Block) Serialize()[]byte {
+// 序列化区块
+func (b *Block) Serialize() []byte {
 	var result bytes.Buffer
 	encoder := gob.NewEncoder(&result)
 
-	err:=encoder.Encode(b)
-	if err!=nil {
+	err := encoder.Encode(b)
+	if err != nil {
 		log.Panic(err)
 	}
 	return result.Bytes()
 }
 
-//创建新块并返回
-func NewBlock(data string, prevBlockHash []byte) *Block {
-	block := &Block{time.Now().Unix(), []byte(data), prevBlockHash, []byte{},0}
-	pow:=NewProofOfWork(block)
-	nonce,hash:=pow.RunProofOfWork()
-	
-	block.Hash=hash[:]
-	block.Nonce=nonce
+// 返回块中的交易哈希
+func (b *Block) HashTranscations() []byte {
+	var txHashes [][]byte
+	var txHash [32]byte
+
+	for _, tx := range b.Transactions {
+		txHashes = append(txHashes, tx.ID)
+	}
+	txHash = sha256.Sum256(bytes.Join(txHashes, []byte{}))
+
+	return txHash[:]
+}
+
+// 创建新块并返回
+func NewBlock(transaction []*Transaction, prevBlockHash []byte) *Block {
+	block := &Block{time.Now().Unix(), transaction, prevBlockHash, []byte{}, 0}
+	pow := NewProofOfWork(block)
+	nonce, hash := pow.RunProofOfWork()
+
+	block.Hash = hash[:]
+	block.Nonce = nonce
 	return block
 }
 
-//创建新的创世纪块并返回
-func NewGenesisBlock() *Block {
-	return NewBlock("Genesis Block", []byte{})
+// 创建新的创世纪块并返回
+func NewGenesisBlock(coinbase *Transaction) *Block {
+	return NewBlock([]*Transaction{coinbase}, []byte{})
 }
 
-//反序列化块
-func DeserializeBlock(d []byte) *Block{
+// 反序列化块
+func DeserializeBlock(d []byte) *Block {
 	var block Block
 
-	decoder:=gob.NewDecoder(bytes.NewBuffer(d))
-	err:=decoder.Decode(&block)
-	if err!=nil {
+	decoder := gob.NewDecoder(bytes.NewBuffer(d))
+	err := decoder.Decode(&block)
+	if err != nil {
 		log.Panic(err)
 	}
 	return &block
