@@ -176,32 +176,6 @@ func (tx *Transaction) Verify(prevTXs map[string]Transaction) bool {
 	return true
 }
 
-//设置交易id
-// func (tx *Transaction) SetID() {
-// 	var encoded bytes.Buffer
-// 	var hash [32]byte
-
-// 	enc := gob.NewEncoder(&encoded)
-// 	err := enc.Encode(tx)
-// 	if err != nil {
-// 		log.Panic(err)
-// 	}
-// 	hash = sha256.Sum256(encoded.Bytes())
-// 	tx.ID = hash[:]
-
-// }
-
-//检查地址
-// func (in *TXInput) CanUnlockOutputWith(unlockingData string) bool {
-// 	return in.ScriptSig == unlockingData
-// }
-
-//检查是否可以用提供的数据解锁输出
-// func (out *TXOutput) CanBeUnlockWith(unlockingData string) bool {
-// 	return out.ScriptPubKey == unlockingData
-// }
-
-//创造一个新的coinbase交易
 func NewCoinbaseTX(to, data string) *Transaction {
 	if data == "" {
 		data = fmt.Sprintf("Reward to '%s'", to)
@@ -216,7 +190,7 @@ func NewCoinbaseTX(to, data string) *Transaction {
 }
 
 //创造一个新的交易
-func NewUTXOTransaction(from, to string, amount int, bc *BlockChain) *Transaction {
+func NewUTXOTransaction(from, to string, amount int, UTXOSet *UTXOSet) *Transaction {
 	var inputs []TXInput
 	var outputs []TXOutput
 
@@ -227,7 +201,7 @@ func NewUTXOTransaction(from, to string, amount int, bc *BlockChain) *Transactio
 	wallet := wallets.GetWallet(from)
 	pubKeyHash := HashPubKey(wallet.PublicKey)
 
-	acc, validOutputs := bc.FindSpendableOutputs(pubKeyHash, amount)
+	acc, validOutputs := UTXOSet.FindSpendableOutputs(pubKeyHash, amount)
 
 	if acc < amount {
 		log.Panic("ERROR: Not enough funds")
@@ -256,7 +230,7 @@ func NewUTXOTransaction(from, to string, amount int, bc *BlockChain) *Transactio
 
 	tx := Transaction{nil, inputs, outputs}
 	tx.ID = tx.Hash()
-	bc.SignTransaction(&tx, wallet.PrivateKey)
+	UTXOSet.Blockchain.SignTransaction(&tx, wallet.PrivateKey)
 
 	return &tx
 }

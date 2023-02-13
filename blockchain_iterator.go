@@ -12,7 +12,7 @@ type BlockChainIterator struct {
 	db          *bolt.DB
 }
 
-// Next returns next block starting from the tip
+// 下一个区块
 func (i *BlockChainIterator) Next() *Block {
 	var block *Block
 
