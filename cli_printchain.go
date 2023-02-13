@@ -5,8 +5,8 @@ import (
 	"strconv"
 )
 
-func (cli *CLI) printChain() {
-	bc := NewBlockChain()
+func (cli *CLI) printChain(nodeID string) {
+	bc := NewBlockChain(nodeID)
 	defer bc.db.Close()
 
 	bci := bc.Iterator()

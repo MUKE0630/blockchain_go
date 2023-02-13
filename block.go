@@ -14,6 +14,7 @@ type Block struct {
 	PrevBlockHash []byte
 	Hash          []byte
 	Nonce         int
+	Height int
 }
 
 // 序列化区块
@@ -41,8 +42,8 @@ func (b *Block) HashTranscations() []byte {
 }
 
 // 创建新块并返回
-func NewBlock(transaction []*Transaction, prevBlockHash []byte) *Block {
-	block := &Block{time.Now().Unix(), transaction, prevBlockHash, []byte{}, 0}
+func NewBlock(transaction []*Transaction, prevBlockHash []byte,height int) *Block {
+	block := &Block{time.Now().Unix(), transaction, prevBlockHash, []byte{}, 0,height}
 	pow := NewProofOfWork(block)
 	nonce, hash := pow.RunProofOfWork()
 
@@ -53,7 +54,7 @@ func NewBlock(transaction []*Transaction, prevBlockHash []byte) *Block {
 
 // 创建新的创世纪块并返回
 func NewGenesisBlock(coinbase *Transaction) *Block {
-	return NewBlock([]*Transaction{coinbase}, []byte{})
+	return NewBlock([]*Transaction{coinbase}, []byte{},0)
 }
 
 // 反序列化块
