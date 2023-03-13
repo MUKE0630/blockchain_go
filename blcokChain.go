@@ -17,7 +17,7 @@ const genesisCoinbaseData = "The Times 12/2/2023 Chancellor on brink of second b
 
 // 区块链保持一个有序快。
 type BlockChain struct {
-	tip []byte
+	tip []byte		//tip 为数据库中存储的最后一个块的哈希
 	db  *bolt.DB
 }
 
@@ -215,25 +215,25 @@ func dbExists() bool {
 
 // 使用创世纪块创建新的区块链
 func NewBlockChain(nodeID string) *BlockChain {
-	if dbExists() == false {
+	if dbExists() == false {		//查看是否有数据库文件
 		fmt.Println("No existing blockchain found. Create one first.")
 		os.Exit(1)
 	}
 
-	var tip []byte
-	db, err := bolt.Open(dbFile, 0600, nil)
-	if err != nil {
+	var tip []byte		//tip 为数据库中存储的最后一个块的哈希
+	db, err := bolt.Open(dbFile, 0600, nil)		// db = 打开的数据库文件
+	if err != nil {		// 文件读取异常处理
 		log.Panic(err)
 	}
 
 	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(blocksBucket))
-		tip = b.Get([]byte("1"))
+		b := tx.Bucket([]byte(blocksBucket))		
+		tip = b.Get([]byte("1"))		//b.Get([]byte("1")) 会返回数据库中 key=1 对应的值，即最后一个区块的hash
 
 		return nil
 	})
 
-	if err != nil {
+	if err != nil {		
 		log.Panic(err)
 	}
 
